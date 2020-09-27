@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mongo Connection</title>
+</head>
+<body>
+    <h1>Send data to database</h1>
+    <form action="/addProduct" method="POST" >
+        <input type="text" name="name"  placeholder="Product Name">
+        <input type="text" name="price"  placeholder="Price">
+        <input type="text" name="quantity"  placeholder="Quantity">
+        <button type="submit">Submit</button>
+    </form>
+    <p id="productDetails"></p>
+    <div id="singleProduct"></div>
+    <script>
+        function loadProduct (){
+            fetch('/products')
+            .then(res=> res.json())
+            .then(product=>{
+                console.log(product);
+                const container = document.getElementById('productDetails');
+                product.forEach(element => {
+                    const item = document.createElement('p');
+                    item.innerHTML = `Product Name: ${element.name} price:  ${element.price} Quantity: ${element.quantity}
+                    <button onclick="deleteProduct('${element._id}')" >Delete</button> 
+                    <button onclick="loadSingleProduct('${element._id}')">Update</button> 
+                    `;
+                    container.appendChild(item);
+                });
+            })
+        }
+
+        loadProduct ();
+
+        function loadSingleProduct(id){
+            fetch(`singleProduct/${id}`)
+            .then(res=> res.json())
+            .then(data=>{
+                console.log(data);
+                const singleProduct = document.getElementById('singleProduct');
+                singleProduct.innerHTML = 
+                `<h3>Product Id: ${data._id}</h3>
+                Price: <input type="text" id="price" value = ${data.price}><br>
+                Quantity: <input type="text" id="quantity" value = ${data.quantity}><br>
+                <button onclick="updateProduct('${data._id}')" type="submit">Submit</button>`
+            })
+        }
+
+        function updateProduct(id){
+            // console.log("updated")
+            const price = document.getElementById('price').value;
+            const quantity = document.getElementById('quantity').value;
+            const product = {id, price, quantity};
+            fetch(`update/${id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-type': 'application/json'
+                },
+                body: JSON.stringify(product)
+            })
+            .then(res=> res.json())
+            .then(result=>{
+                console.log('Updated Successfully');
+            }) 
+        }
+
+        function deleteProduct(id){
+            // console.log(id);
+            fetch(`delete/${id}`, {
+                method: 'DELETE'
+            })
+            .then(res=>res.json())
+            .then(result=>{
+                console.log('Deleted Successfully');
+            })           
+        }
+    </script>
+</body>
+</html>
